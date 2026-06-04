@@ -112,7 +112,7 @@
 
 ;; --- 7. הרצה ---
 (define (main)
-  (let* ([file-path "C:\\Users\\shadiBRZ\\Desktop\\colleage\\semester 10\\Software Languages\\poly_coeff_newton.csv"] ; שים לב לעדכן נתיב אם צריך
+  (let* ([file-path "C:\\Users\\shadiBRZ\\Desktop\\colleage\\semester 10\\Software Languages\\poly_coeff_newton.csv"]
          [eps 1e-6])
     ;; תפיסת שגיאות למקרה שהקובץ לא נמצא
     (with-handlers ([exn:fail? (lambda (exn) (printf "Error: ~a\n" (exn-message exn)))])

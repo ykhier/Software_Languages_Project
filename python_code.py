@@ -5,7 +5,6 @@ import time
 def load_coeffs(filename):
     df = pd.read_csv(filename, header=None)
     coeffs = df[0].values
-    # נרמול ראשוני: שמירת המקדמים בטווח נוח למחשב
     return coeffs / np.max(np.abs(coeffs))
 
 def horner_eval(coeffs, x):
@@ -144,4 +143,3 @@ if __name__ == "__main__":
             
     except Exception as e:
          print(f"An error occurred: {e}")
-         
