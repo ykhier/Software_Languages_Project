@@ -162,9 +162,10 @@ if __name__ == "__main__":
         print(f"Numpy np.roots Runtime: {elapsed_np:.4f} seconds\n")
 
         if len(my_roots) == len(real_numpy_roots):
-            is_match = np.allclose(my_roots, real_numpy_roots, atol=1e-5)
-            print(
-                f"MATCH RESULT: {'SUCCESS - Roots are identical!' if is_match else 'WARNING - Roots differ.'}")
+            if my_roots == real_numpy_roots:
+                print("SUCCESS - Roots are identical!")
+            else:
+                print("WARNING - Roots differ.")
         else:
             print("WARNING - Algorithms found a different number of real roots.")
 
