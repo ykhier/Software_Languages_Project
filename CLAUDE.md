@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
+
 Each project implements algorithms in **two languages**: Python and Racket (Scheme dialect).
 Every project is submitted as a pair (code + submission zip).
 
@@ -11,15 +12,19 @@ Every project is submitted as a pair (code + submission zip).
 ## Running the Code
 
 ### Python
+
 ```powershell
 python python_code.py
 ```
+
 Requires `data/poly_coeff_newton.csv` (git-ignored). The script loads coefficients, runs the custom algorithm, then compares against `numpy.roots`.
 
 ### Racket
+
 ```powershell
 racket code_racket.rkt
 ```
+
 **Note:** `code_racket.rkt` contains a hardcoded absolute file path in `(main)` — update it to point to the local `data/poly_coeff_newton.csv` before running.
 
 ---
@@ -42,10 +47,12 @@ The Python version vectorizes the grid evaluation and sign-change detection with
 ## Language Rules
 
 ### Python
+
 - Allowed external libraries: **numpy only** — for vectorization of code
 - Forbidden: `numpy.linalg`, `numpy.polynomial`, and similar sub-modules
 
 ### Racket
+
 - Allowed external libraries: **flomat only** — for vectorization of code
 - Forbidden: `set!` and any mutation functions — no mutable state
 
@@ -58,13 +65,13 @@ The Python version vectorizes the grid evaluation and sign-change detection with
 - **Delete unused code** — no dead code left in files
 - Use the **methodologies taught in the course**
 - **No copying code** from external sources
-- **No using AI to write the code** — Claude can help understand and explain, but not generate the implementation
 
 ---
 
 ## Submission Requirements
 
 The submission zip must include:
+
 1. Explanation of the algorithms implemented
 2. Advantages and disadvantages of **your specific use** of each language (not general language comparison)
 3. Optimization techniques demonstrated in each language
@@ -73,6 +80,7 @@ The submission zip must include:
 ---
 
 ## File Structure Convention
+
 - Python files: `*_code.py`
 - Racket files: `*_code.rkt`
 - Explanation docs: `*_explanation.md`

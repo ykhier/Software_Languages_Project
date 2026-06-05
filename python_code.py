@@ -5,7 +5,6 @@ import time
 
 def load_coeffs(filename):
     coeffs = np.loadtxt(filename)
-
     return coeffs / np.max(np.abs(coeffs))
 
 
@@ -31,13 +30,13 @@ def bisection(coeffs, a, b, eps):
         mid = (a + b) / 2
         fmid = horner_eval(coeffs, mid)
 
-        if np.isnan(fmid):
+        if fmid != float('nan'):
             return mid
 
         if abs(fmid) < eps or (b - a) / 2 < eps:
             return mid
 
-        if np.sign(fmid) == np.sign(fa):
+        if fmid * fa > 0:
             a = mid
             fa = fmid
         else:
@@ -47,11 +46,8 @@ def bisection(coeffs, a, b, eps):
 
 def newton_raphson(coeffs, x0, eps):
     x = x0
-    for _ in range(50):
+    for _ in range(100):
         fx, dfx = horner_eval_with_deriv(coeffs, x)
-
-        if np.isinf(fx) or np.isinf(dfx) or np.isnan(fx) or np.isnan(dfx) or abs(dfx) < 1e-15:
-            return x
 
         x_new = x - fx / dfx
 
@@ -77,11 +73,6 @@ def scan_range(coeffs, lo, hi, eps):
     bounds = np.linspace(lo, hi, num_points)
     vals = horner_eval(coeffs, bounds)
 
-    # --- שלב 1: מציאת גבולות קטעי מונוטוניות לפי שורשי f' ---
-    # לפי ההערה: כל שורש x של f מקיים f'(x)=0 או נמצא בין שני שורשים עוקבים של f'.
-    # f מונוטונית בין נקודות קריטיות עוקבות, ולכן בכל קטע כזה יש לכל היותר שורש אחד.
-    # הגבולות הם אינדקסי הרשת משני צדי כל שינוי סימן של f' — שימוש ב-vals (f ברשת)
-    # מבטיח יציבות נומרית מלאה, ללא חישוב f בנקודות קריטיות מדויקות שבהן עלול להיות ביטול.
     dcoeffs = derivative_coeffs(coeffs)
     dvals = horner_eval(dcoeffs, bounds)
     dsigns = np.sign(dvals)
@@ -104,15 +95,12 @@ def scan_range(coeffs, lo, hi, eps):
         fa = vals[a_idx]
         fb = vals[b_idx]
 
-        if np.isnan(fa) or np.isnan(fb) or np.isinf(fa) or np.isinf(fb):
-            continue
-
         # אפס מדויק בנקודת הגבול (שורש כפול: f=0 ו-f'=0 באותה נקודה)
         if fa == 0.0:
             roots.append(float(bounds[a_idx]))
 
         # שינוי סימן → שורש יחיד בקטע המונוטוני, חידוד ב-bisection+Newton
-        if np.sign(fa) * np.sign(fb) < 0:
+        if fa * fb < 0:
             root_bi = bisection(coeffs, bounds[a_idx], bounds[b_idx], eps)
             root_final = newton_raphson(coeffs, root_bi, eps)
             roots.append(root_final)
@@ -125,10 +113,8 @@ def scan_range(coeffs, lo, hi, eps):
 
 
 def find_all_roots(coeffs, eps):
-    # 1. מציאת שורשים פנימיים (הגדלנו מעט את הטווח כדי לכלול את 1 ו- -1 בבטחה)
     inner_roots = scan_range(coeffs, -1.05, 1.05, eps)
 
-    # 2. הפיכת הפולינום למציאת שורשים חיצוניים (עבור y=1/x)
     reversed_coeffs = coeffs[::-1]
     y_roots = scan_range(reversed_coeffs, -1.05, 1.05, eps)
 
@@ -138,10 +124,8 @@ def find_all_roots(coeffs, eps):
             x = 1.0 / y
             outer_roots.append(x)
 
-    # 3. איחוד ועיבוד סופי - ה-set יעלים את כל הכפילויות שנוצרו בגלל החפיפה בטווחי החיפוש
     all_roots = inner_roots + outer_roots
-    valid_roots = [r for r in all_roots if not np.isnan(r) and not np.isinf(r)]
-    return sorted(list(set(float(np.round(r, 6)) for r in valid_roots)))
+    return sorted(list(set(float(np.round(r, 6)) for r in all_roots)))
 
 
 # --- הרצה והשוואה ---
@@ -151,10 +135,11 @@ if __name__ == "__main__":
     eps = 1e-6
 
     try:
+        t0 = time.perf_counter()
         poly_coeffs = load_coeffs(file_path)
 
         print("--- Custom Algorithm (Bisection + Newton-Raphson + Dual Scan) ---")
-        t0 = time.perf_counter()
+
         my_roots = find_all_roots(poly_coeffs, eps)
         elapsed_my = time.perf_counter() - t0
 
@@ -176,7 +161,6 @@ if __name__ == "__main__":
         print(f"Roots: {real_numpy_roots}")
         print(f"Numpy np.roots Runtime: {elapsed_np:.4f} seconds\n")
 
-        # בדיקת תאימות סופית
         if len(my_roots) == len(real_numpy_roots):
             is_match = np.allclose(my_roots, real_numpy_roots, atol=1e-5)
             print(
