@@ -30,9 +30,6 @@ def bisection(coeffs, a, b, eps):
         mid = (a + b) / 2
         fmid = horner_eval(coeffs, mid)
 
-        if fmid != float('nan'):
-            return mid
-
         if abs(fmid) < eps or (b - a) / 2 < eps:
             return mid
 

@@ -36,7 +36,6 @@
           (let* ([mid (/ (+ curr-a curr-b) 2.0)]
                  [fmid (horner-eval coeffs mid)])
             (cond
-              [(not (rational? fmid)) mid]
               [(or (< (abs fmid) eps) (< (/ (- curr-b curr-a) 2.0) eps)) mid]
               [(eqv? (sgn fmid) (sgn curr-fa)) (loop mid curr-b fmid (add1 iter))]
               [else (loop curr-a mid curr-fa (add1 iter))]))))))
@@ -152,6 +151,7 @@
          [sorted (sort rounded <)])
     (remove-duplicates sorted =)))
 
+;; --- 10. הרצה ---
 (define (main)
   (let* ([file-path (path->string (build-path (current-directory) "data" "poly_coeff_newton.csv"))]
          [eps 1e-6])
