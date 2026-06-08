@@ -66,7 +66,7 @@
 
 (define (build-boundary-indices dvals n)
   (let loop ([i 0] [dvs dvals] [acc (list 0 (- n 1))])
-    (if (or (null? dvs) (null? (cdr dvs)))
+    (if (null? (cdr dvs))
         (sort (remove-duplicates acc =) <)
         (let ([dv0 (car dvs)]
               [dv1 (cadr dvs)])
@@ -80,7 +80,6 @@
             [else
              (loop (add1 i) (cdr dvs) acc)])))))
 
-;; --- 8. סריקת הטווח עם בראקטינג לפי f' ---
 (define (scan-range coeffs lo hi eps)
   (let* ([bounds (generate-bounds lo hi 0.001)]
          [n (length bounds)]
