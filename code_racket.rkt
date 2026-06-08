@@ -43,7 +43,7 @@
 ;; --- 4. שיטת ניוטון-רפסון ---
 (define (newton-raphson coeffs x0 eps)
   (let loop ([x x0] [iter 0])
-    (if (>= iter 50)
+    (if (>= iter 100)
         x
         (let-values ([(fx dfx) (horner-eval-with-deriv coeffs x)])
           (cond
