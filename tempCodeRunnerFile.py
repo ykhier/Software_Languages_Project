@@ -1,1 +1,0 @@
-    all_roots = inner_roots + outer_roots
