@@ -46,6 +46,9 @@ def newton_raphson(coeffs, x0, eps):
     for _ in range(100):
         fx, dfx = horner_eval_with_deriv(coeffs, x)
 
+        if abs(dfx) < 1e-15:
+            return x
+
         x_new = x - fx / dfx
 
         if abs(x_new - x) < eps:
@@ -58,7 +61,7 @@ def derivative_coeffs(coeffs):
     n = len(coeffs) - 1
     if n == 0:
         return np.array([0.0])
-    # כל מקדם מוכפל בחזקה המתאימה: [n*a0, (n-1)*a1, ..., 1*a_{n-1}]
+
     powers = np.arange(n, 0, -1)
     return coeffs[:-1] * powers
 

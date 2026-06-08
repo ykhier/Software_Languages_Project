@@ -4,21 +4,18 @@
 (require racket/file)
 (require racket/math)
 
-;; --- 1. טעינת מקדמים ונרמול ---
 (define (load-coeffs filename)
   (let* ([lines (file->lines filename)]
          [coeffs (map string->number (map string-trim lines))]
          [max-val (apply max (map abs coeffs))])
     (map (lambda (c) (/ c max-val)) coeffs)))
 
-;; --- 2. שיטת הורנר ---
 (define (horner-eval coeffs x)
   (let loop ([lst (cdr coeffs)] [res (car coeffs)])
     (if (null? lst)
         res
         (loop (cdr lst) (+ (* res x) (car lst))))))
 
-;; הערכת הפונקציה והנגזרת במעבר אחד
 (define (horner-eval-with-deriv coeffs x)
   (let loop ([lst (cdr coeffs)] [res (car coeffs)] [der 0.0])
     (if (null? lst)
@@ -27,7 +24,6 @@
               (+ (* res x) (car lst))
               (+ (* der x) res)))))
 
-;; --- 3. שיטת החצייה (Bisection) ---
 (define (bisection coeffs a b eps)
   (let ([fa (horner-eval coeffs a)])
     (let loop ([curr-a a] [curr-b b] [curr-fa fa] [iter 0])
@@ -40,23 +36,19 @@
               [(eqv? (sgn fmid) (sgn curr-fa)) (loop mid curr-b fmid (add1 iter))]
               [else (loop curr-a mid curr-fa (add1 iter))]))))))
 
-;; --- 4. שיטת ניוטון-רפסון ---
 (define (newton-raphson coeffs x0 eps)
   (let loop ([x x0] [iter 0])
     (if (>= iter 100)
         x
         (let-values ([(fx dfx) (horner-eval-with-deriv coeffs x)])
-          (cond
-            [(or (not (rational? fx)) (not (rational? dfx)) (< (abs dfx) 1e-15)) x]
-            [else
-             (let ([x-new (- x (/ fx dfx))])
-               (if (< (abs (- x-new x)) eps)
-                   x-new
-                   (loop x-new (add1 iter))))])))))
+          (if (< (abs dfx) 1e-15)
+              x
+              (let ([x-new (- x (/ fx dfx))])
+                (if (< (abs (- x-new x)) eps)
+                    x-new
+                    (loop x-new (add1 iter)))))))))
 
-;; --- 5. מקדמי הנגזרת ---
-;; קלט: [a0 a1 ... an] עבור a0*x^n + ... + an
-;; פלט: [n*a0, (n-1)*a1, ..., 1*a_{n-1}]
+
 (define (derivative-coeffs coeffs)
   (let ([n (- (length coeffs) 1)])
     (if (= n 0)
@@ -68,14 +60,10 @@
                     (- power 1)
                     (cons (* (exact->inexact (car lst)) power) acc)))))))
 
-;; --- 6. יצירת רשת נקודות ---
 (define (generate-bounds lo hi step)
   (let ([num-points (add1 (inexact->exact (round (/ (- hi lo) step))))])
     (build-list num-points (lambda (i) (+ lo (* i step))))))
 
-;; --- 7. בניית אינדקסי הגבולות לפי שינויי סימן של f' ---
-;; לפי ההערה: כל שורש x של f מקיים f'(x)=0 או נמצא בין שני שורשים עוקבים של f'.
-;; מחזיר רשימה ממוינת של אינדקסים שמחלקים את הרשת לקטעים חד-מונוטוניים.
 (define (build-boundary-indices dvals n)
   (let loop ([i 0] [dvs dvals] [acc (list 0 (- n 1))])
     (if (or (null? dvs) (null? (cdr dvs)))
