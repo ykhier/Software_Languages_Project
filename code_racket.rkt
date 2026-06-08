@@ -120,21 +120,23 @@
                                     (if (> (abs y) eps) (/ 1.0 y) #f))
                                   y-roots)]
          [all-roots (append inner-roots outer-roots)]
-         [valid-roots (filter rational? all-roots)]
-         [rounded (map (lambda (x) (/ (round (* x 1000000.0)) 1000000.0)) valid-roots)]
+         [rounded (map (lambda (x) (/ (round (* x 1000000.0)) 1000000.0)) all-roots)]
          [sorted (sort rounded <)])
     (remove-duplicates sorted =)))
 
 (define (main)
   (let* ([file-path (path->string (build-path (current-directory) "data" "poly_coeff_newton.csv"))]
          [eps 1e-6])
-    (with-handlers ([exn:fail? (lambda (exn) (printf "Error: ~a\n" (exn-message exn)))])
-      (printf "--- Racket Algorithm (Bisection + Newton-Raphson + Dual Scan) ---\n")
-      (let* ([coeffs (load-coeffs file-path)]
-             [t0 (current-inexact-milliseconds)]
-             [roots (find-all-roots coeffs eps)]
-             [t1 (current-inexact-milliseconds)])
-        (printf "Number of real roots found: ~a\n" (length roots))
-        (printf "Roots: ~a\n" roots)
-        (printf "Runtime: ~a seconds\n" (/ (- t1 t0) 1000.0))))))
+    (cond
+      [(not (file-exists? file-path))
+       (printf "THE FILE DOES NOT EXIST\n")]
+      [else
+       (printf "--- Racket Algorithm (Bisection + Newton-Raphson + Dual Scan) ---\n")
+       (let* ([coeffs (load-coeffs file-path)]
+              [t0 (current-inexact-milliseconds)]
+              [roots (find-all-roots coeffs eps)]
+              [t1 (current-inexact-milliseconds)])
+         (printf "Number of real roots found: ~a\n" (length roots))
+         (printf "Roots: ~a\n" roots)
+         (printf "Runtime: ~a seconds\n" (/ (- t1 t0) 1000.0)))])))
 (main)

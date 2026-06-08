@@ -25,7 +25,7 @@ Requires `data/poly_coeff_newton.csv` (git-ignored). The script loads coefficien
 racket code_racket.rkt
 ```
 
-**Note:** `code_racket.rkt` contains a hardcoded absolute file path in `(main)` — update it to point to the local `data/poly_coeff_newton.csv` before running.
+**Note:** `code_racket.rkt` resolves the data path relative to `(current-directory)` — run it from the project root so it finds `data/poly_coeff_newton.csv`.
 
 ---
 
@@ -33,14 +33,15 @@ racket code_racket.rkt
 
 Both files implement the same algorithm: finding all real roots of a high-degree polynomial (~996th degree) using **Bisection + Newton-Raphson + Dual Scan**.
 
-Key architectural decisions (documented in `python_explanation.md`):
+Key architectural decisions (documented in `python_explanation.md`, written in Hebrew):
 
 1. **Horner's method** — evaluates `p(x)` and `p'(x)` in a single O(n) pass.
-2. **Sign-scan bracketing** — dense grid scan over `[-1.05, 1.05]` detecting sign changes; avoids recursive derivative approach which produces false roots at this degree.
-3. **Dual scan via inverse transform** — roots with `|x| > 1` are found by reversing coefficient order (`q(y) = yⁿ·p(1/y)`), scanning for y-roots, then inverting back. This avoids float64 overflow for large x.
+2. **Sign-scan bracketing** — dense grid scan at step=0.001 over `[-1.05, 1.05]`; derivative sign changes partition the range into monotone sub-intervals before checking for root brackets. Avoids recursive derivative approach which produces false roots at this degree.
+3. **Dual scan via inverse transform** — roots with `|x| > 1` are found by reversing coefficient order (`q(y) = yⁿ·p(1/y)`), scanning for y-roots, then inverting back. Avoids float64 overflow for large x.
 4. **Coefficient normalization** — divides all coefficients by their max absolute value to keep values in a numerically stable range.
+5. **Bisection + Newton-Raphson hybrid** — bisection provides a safe bracket (max 100 iters), then Newton-Raphson refines to full precision (max 100 iters, eps=1e-6).
 
-The Python version vectorizes the grid evaluation and sign-change detection with numpy. The Racket version uses tail-recursive loops throughout (no `set!` or mutation).
+The Python version vectorizes grid evaluation and sign-change detection with numpy. The Racket version uses tail-recursive loops throughout (no `set!` or mutation). The Python `__main__` block also benchmarks against `numpy.roots` (companion matrix eigenvalues) as a correctness check.
 
 ---
 
