@@ -66,15 +66,13 @@
 
 (define (build-boundary-indices dvals n)
   (let loop ([i 0] [dvs dvals] [acc (list 0 (- n 1))])
-    (if (null? (cdr dvs))
+    (if (or (null? dvs) (null? (cdr dvs)))
         (sort (remove-duplicates acc =) <)
         (let ([dv0 (car dvs)]
-              [dv1 (cadr dvs)])
+              [dv1 (car (cdr dvs))])
           (cond
-            ;; שינוי סימן ב-f': שתי נקודות הרשת מסביב לנקודה הקריטית הן גבולות
             [(< (* (sgn dv0) (sgn dv1)) 0)
              (loop (add1 i) (cdr dvs) (cons (add1 i) (cons i acc)))]
-            ;; אפס מדויק ב-f': נקודת הרשת עצמה היא גבול
             [(= dv0 0.0)
              (loop (add1 i) (cdr dvs) (cons i acc))]
             [else
@@ -86,34 +84,26 @@
          [bounds-vec (list->vector bounds)]
          [vals (map (lambda (x) (horner-eval coeffs x)) bounds)]
          [vals-vec (list->vector vals)]
-         ;; שלב 1: מציאת גבולות קטעי מונוטוניות לפי שורשי f'
+        
          [dcoeffs (derivative-coeffs coeffs)]
          [dvals (map (lambda (x) (horner-eval dcoeffs x)) bounds)]
          [boundary-indices (build-boundary-indices dvals n)])
 
-    ;; שלב 2: בדיקת שינוי סימן של f בין גבולות עוקבים
-    ;; כל קטע חד-מונוטוני → bisection+Newton מוצא את השורש היחיד
     (let loop ([idxs boundary-indices] [roots '()])
       (if (null? (cdr idxs))
-          ;; בדיקת נקודת הקצה האחרונה
           (let* ([last-idx (car idxs)]
                  [last-val (vector-ref vals-vec last-idx)]
                  [last-pt (vector-ref bounds-vec last-idx)])
-            (reverse (if (= last-val 0.0) (cons last-pt roots) roots)))
+            (if (= last-val 0.0) (cons last-pt roots) roots))
           (let* ([a-idx (car idxs)]
                  [b-idx (cadr idxs)]
                  [fa (vector-ref vals-vec a-idx)]
                  [fb (vector-ref vals-vec b-idx)]
                  [a (vector-ref bounds-vec a-idx)]
-                 [b (vector-ref bounds-vec b-idx)])
+                 [b (vector-ref bounds-vec b-idx)]) 
             (cond
-              ;; דילוג על חריגות נומריות
-              [(or (not (rational? fa)) (not (rational? fb)))
-               (loop (cdr idxs) roots)]
-              ;; אפס מדויק בגבול שמאלי (שורש כפול: f=0 ו-f'=0 באותה נקודה)
               [(= fa 0.0)
                (loop (cdr idxs) (cons a roots))]
-              ;; שינוי סימן → שורש יחיד בקטע המונוטוני, חידוד ב-bisection+Newton
               [(< (* (sgn fa) (sgn fb)) 0)
                (let* ([root-bi (bisection coeffs a b eps)]
                       [root-fn (newton-raphson coeffs root-bi eps)])
@@ -121,24 +111,20 @@
               [else
                (loop (cdr idxs) roots)]))))))
 
-;; --- 9. מציאת כל השורשים (Dual Scan) ---
 (define (find-all-roots coeffs eps)
-  (let* (;; שורשים פנימיים: |x| <= 1
+  (let* (
          [inner-roots (scan-range coeffs -1.05 1.05 eps)]
-         ;; שורשים חיצוניים: היפוך סדר המקדמים למציאת y=1/x בתחום [-1,1]
          [reversed-coeffs (reverse coeffs)]
          [y-roots (scan-range reversed-coeffs -1.05 1.05 eps)]
          [outer-roots (filter-map (lambda (y)
                                     (if (> (abs y) eps) (/ 1.0 y) #f))
                                   y-roots)]
-         ;; איחוד, עיגול ל-6 ספרות עשרוניות, מיון והסרת כפילויות
          [all-roots (append inner-roots outer-roots)]
          [valid-roots (filter rational? all-roots)]
          [rounded (map (lambda (x) (/ (round (* x 1000000.0)) 1000000.0)) valid-roots)]
          [sorted (sort rounded <)])
     (remove-duplicates sorted =)))
 
-;; --- 10. הרצה ---
 (define (main)
   (let* ([file-path (path->string (build-path (current-directory) "data" "poly_coeff_newton.csv"))]
          [eps 1e-6])
@@ -151,5 +137,4 @@
         (printf "Number of real roots found: ~a\n" (length roots))
         (printf "Roots: ~a\n" roots)
         (printf "Runtime: ~a seconds\n" (/ (- t1 t0) 1000.0))))))
-
 (main)

@@ -68,7 +68,6 @@ def derivative_coeffs(coeffs):
 
 def scan_range(coeffs, lo, hi, eps):
     step = 0.001
-    # שימוש ב-linspace בטוח יותר מ-arange למניעת פספוס קצוות בגלל עיגול עשרוני
     num_points = int(round((hi - lo) / step)) + 1
     bounds = np.linspace(lo, hi, num_points)
     vals = horner_eval(coeffs, bounds)
@@ -85,8 +84,6 @@ def scan_range(coeffs, lo, hi, eps):
     boundary_set.update(np.where(dvals == 0.0)[0].tolist())
     boundary_indices = sorted(boundary_set)
 
-    # --- שלב 2: בדיקת שינוי סימן של f בין גבולות עוקבים ---
-    # כל קטע חד-מונוטוני → bisection+Newton מוצא את השורש היחיד
     roots = []
 
     for j in range(len(boundary_indices) - 1):
@@ -95,17 +92,14 @@ def scan_range(coeffs, lo, hi, eps):
         fa = vals[a_idx]
         fb = vals[b_idx]
 
-        # אפס מדויק בנקודת הגבול (שורש כפול: f=0 ו-f'=0 באותה נקודה)
         if fa == 0.0:
             roots.append(float(bounds[a_idx]))
 
-        # שינוי סימן → שורש יחיד בקטע המונוטוני, חידוד ב-bisection+Newton
         if fa * fb < 0:
             root_bi = bisection(coeffs, bounds[a_idx], bounds[b_idx], eps)
             root_final = newton_raphson(coeffs, root_bi, eps)
             roots.append(root_final)
 
-    # בדיקת נקודת הקצה האחרונה
     if vals[boundary_indices[-1]] == 0.0:
         roots.append(float(bounds[boundary_indices[-1]]))
 
