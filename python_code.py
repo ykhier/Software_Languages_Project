@@ -30,9 +30,6 @@ def bisection(coeffs, a, b, eps):
         mid = (a + b) / 2
         fmid = horner_eval(coeffs, mid)
 
-        if fmid != float('nan'):
-            return mid
-
         if abs(fmid) < eps or (b - a) / 2 < eps:
             return mid
 
@@ -49,6 +46,9 @@ def newton_raphson(coeffs, x0, eps):
     for _ in range(100):
         fx, dfx = horner_eval_with_deriv(coeffs, x)
 
+        if abs(dfx) < 1e-15:
+            return x
+
         x_new = x - fx / dfx
 
         if abs(x_new - x) < eps:
@@ -61,14 +61,13 @@ def derivative_coeffs(coeffs):
     n = len(coeffs) - 1
     if n == 0:
         return np.array([0.0])
-    # כל מקדם מוכפל בחזקה המתאימה: [n*a0, (n-1)*a1, ..., 1*a_{n-1}]
+
     powers = np.arange(n, 0, -1)
     return coeffs[:-1] * powers
 
 
 def scan_range(coeffs, lo, hi, eps):
     step = 0.001
-    # שימוש ב-linspace בטוח יותר מ-arange למניעת פספוס קצוות בגלל עיגול עשרוני
     num_points = int(round((hi - lo) / step)) + 1
     bounds = np.linspace(lo, hi, num_points)
     vals = horner_eval(coeffs, bounds)
@@ -85,8 +84,6 @@ def scan_range(coeffs, lo, hi, eps):
     boundary_set.update(np.where(dvals == 0.0)[0].tolist())
     boundary_indices = sorted(boundary_set)
 
-    # --- שלב 2: בדיקת שינוי סימן של f בין גבולות עוקבים ---
-    # כל קטע חד-מונוטוני → bisection+Newton מוצא את השורש היחיד
     roots = []
 
     for j in range(len(boundary_indices) - 1):
@@ -95,17 +92,14 @@ def scan_range(coeffs, lo, hi, eps):
         fa = vals[a_idx]
         fb = vals[b_idx]
 
-        # אפס מדויק בנקודת הגבול (שורש כפול: f=0 ו-f'=0 באותה נקודה)
         if fa == 0.0:
             roots.append(float(bounds[a_idx]))
 
-        # שינוי סימן → שורש יחיד בקטע המונוטוני, חידוד ב-bisection+Newton
         if fa * fb < 0:
             root_bi = bisection(coeffs, bounds[a_idx], bounds[b_idx], eps)
             root_final = newton_raphson(coeffs, root_bi, eps)
             roots.append(root_final)
 
-    # בדיקת נקודת הקצה האחרונה
     if vals[boundary_indices[-1]] == 0.0:
         roots.append(float(bounds[boundary_indices[-1]]))
 
