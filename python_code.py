@@ -122,7 +122,6 @@ def find_all_roots(coeffs, eps):
     return sorted(list(set(float(np.round(r, 6)) for r in all_roots)))
 
 
-# --- הרצה והשוואה ---
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(script_dir, 'data', 'poly_coeff_newton.csv')
