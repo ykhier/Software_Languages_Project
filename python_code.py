@@ -74,10 +74,9 @@ def scan_range(coeffs, lo, hi, eps):
 
     dcoeffs = derivative_coeffs(coeffs)
     dvals = horner_eval(dcoeffs, bounds)
-    dsigns = np.sign(dvals)
 
     boundary_set = {0, num_points - 1}
-    dchanges = np.where(dsigns[:-1] * dsigns[1:] < 0)[0]
+    dchanges = np.where(dvals[:-1] * dvals[1:] < 0)[0]
     for i in dchanges:
         boundary_set.add(int(i))
         boundary_set.add(int(i) + 1)
@@ -119,7 +118,13 @@ def find_all_roots(coeffs, eps):
             outer_roots.append(x)
 
     all_roots = inner_roots + outer_roots
-    return sorted(list(set(float(np.round(r, 6)) for r in all_roots)))
+
+    rounded_roots = []
+
+    for r in all_roots:
+        rounded_roots.append(float(np.round(r, 6)))
+
+    return sorted(list(set(rounded_roots)))
 
 
 if __name__ == "__main__":
