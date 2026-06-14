@@ -93,7 +93,7 @@
           (let* ([last-idx (car idxs)]
                  [last-val (vector-ref vals-vec last-idx)]
                  [last-pt (vector-ref bounds-vec last-idx)])
-            (if (= last-val 0.0) (cons last-pt roots) roots))
+            (if (= last-val 0.0) (cons last-pt roots) roots)) 
           (let* ([a-idx (car idxs)]
                  [b-idx (cadr idxs)]
                  [fa (vector-ref vals-vec a-idx)]
