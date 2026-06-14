@@ -80,7 +80,7 @@ def scan_range(coeffs, lo, hi, eps):
     for i in dchanges:
         boundary_set.add(int(i))
         boundary_set.add(int(i) + 1)
-    boundary_set.update(np.where(dvals == 0.0)[0].tolist())
+    boundary_set.update(np.where(dvals == 0.0)[0])
     boundary_indices = sorted(boundary_set)
 
     roots = []
