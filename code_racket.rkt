@@ -2,7 +2,6 @@
 
 (require racket/list)
 (require racket/file)
-(require racket/math)
 
 (define (load-coeffs filename)
   (let* ([lines (file->lines filename)]
@@ -33,7 +32,7 @@
                  [fmid (horner-eval coeffs mid)])
             (cond
               [(or (< (abs fmid) eps) (< (/ (- curr-b curr-a) 2.0) eps)) mid]
-              [(eqv? (sgn fmid) (sgn curr-fa)) (loop mid curr-b fmid (add1 iter))]
+              [(> (* fmid curr-fa) 0) (loop mid curr-b fmid (add1 iter))]
               [else (loop curr-a mid curr-fa (add1 iter))]))))))
 
 (define (newton-raphson coeffs x0 eps)
@@ -71,7 +70,7 @@
         (let ([dv0 (car dvs)]
               [dv1 (car (cdr dvs))])
           (cond
-            [(< (* (sgn dv0) (sgn dv1)) 0)
+            [(< (* dv0 dv1) 0)
              (loop (add1 i) (cdr dvs) (cons (add1 i) (cons i acc)))]
             [(= dv0 0.0)
              (loop (add1 i) (cdr dvs) (cons i acc))]
@@ -104,7 +103,7 @@
             (cond
               [(= fa 0.0)
                (loop (cdr idxs) (cons a roots))]
-              [(< (* (sgn fa) (sgn fb)) 0)
+              [(< (* fa fb) 0)
                (let* ([root-bi (bisection coeffs a b eps)]
                       [root-fn (newton-raphson coeffs root-bi eps)])
                  (loop (cdr idxs) (cons root-fn roots)))]
