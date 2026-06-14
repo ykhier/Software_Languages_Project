@@ -149,10 +149,8 @@ if __name__ == "__main__":
         t1 = time.perf_counter()
         numpy_roots = np.roots(poly_coeffs)
 
-        real_numpy_roots = np.real(
-            numpy_roots[np.abs(numpy_roots.imag) < 1e-8])
-        real_numpy_roots = sorted(
-            list(set(float(np.round(r, 6)) for r in real_numpy_roots)))
+        real_numpy_roots = np.real(numpy_roots[np.abs(numpy_roots.imag) < 1e-8])
+        real_numpy_roots = sorted(list(set(float(np.round(r, 6)) for r in real_numpy_roots)))
         elapsed_np = time.perf_counter() - t1
 
         print(f"Number of real roots found: {len(real_numpy_roots)}")
