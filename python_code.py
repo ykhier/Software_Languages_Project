@@ -156,8 +156,8 @@ def findRoots(coeffs, a, b, eps):
 
 
 def scanPage(coeffs, eps):
-    reversedCoeffs = list(reversed(coeffs))
     innerRoots = findRoots(coeffs, -1.0, 1.0, eps)
+    reversedCoeffs = list(reversed(coeffs))
     outerRootsBounds = findRoots(reversedCoeffs, -1.0, 1.0, eps)
 
     outerRoots = []
@@ -196,8 +196,8 @@ def main():
     t2 = time.perf_counter()
     numpyRoots = np.roots(csvCoeffs)
     realNumpyRoots = np.real(numpyRoots[np.abs(numpyRoots.imag) < 1e-8])
-    realNumpyRoots = sorted(
-        list(set(float(np.round(r, 6)) for r in realNumpyRoots)))
+    realNumpyRoots = sorted(list(set(float(np.round(r, 6))
+                            for r in realNumpyRoots)))
     npTime = time.perf_counter() - t2
     print(f"Number of real roots found: {len(realNumpyRoots)}")
     print(f"Roots: {realNumpyRoots}")

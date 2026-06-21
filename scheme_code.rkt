@@ -5,7 +5,7 @@
          racket/math
          racket/runtime-path)
 
-(define (finite? v)
+(define (isFinite v)
   (if (nan? v)
       #f
       (if (infinite? v)
@@ -33,13 +33,13 @@
 
 (define (find-finite-edge coeffs start other)
   (let ([f (horner-eval coeffs start)])
-    (if (finite? f)
+    (if (isFinite f)
         (values start f)
         (let loop ([a start] [k 0])
           (if (>= k 100)
               (values #f #f)
               (let* ([a2 (/ (+ a other) 2.0)] [f2 (horner-eval coeffs a2)])
-                (if (finite? f2)
+                (if (isFinite f2)
                     (values a2 f2)
                     (loop a2 (+ k 1)))))))))
 
@@ -58,12 +58,12 @@
         #f
         (let-values ([(fx dfx) (horner-eval-with-deriv coeffs x)])
           (cond
-            [(or (not (finite? fx)) (not (finite? dfx)) (= dfx 0)) #f]
+            [(or (not (isFinite fx)) (not (isFinite dfx)) (= dfx 0)) #f]
             [(< (abs fx) eps) x]
             [else
              (let ([xnew (- x (/ fx dfx))])
                (cond
-                 [(not (finite? xnew)) #f]
+                 [(not (isFinite xnew)) #f]
                  [(< (abs (- xnew x)) eps) xnew]
                  [else (loop xnew (+ k 1))]))])))))
 
@@ -115,7 +115,7 @@
                   (if (<= (* fa fb) 0)
                       (let* ([x0 (/ (+ lo hi) 2.0)]
                              [root (or (newton-raphson poly x0 eps) (bisection poly lo hi eps))])
-                        (if (and (finite? root) (<= a root) (<= root b))
+                        (if (and (isFinite root) (<= a root) (<= root b))
                             (loop (cdr pts) (cons root acc))
                             (loop (cdr pts) acc)))
                       (loop (cdr pts) acc)))))))))
