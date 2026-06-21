@@ -93,7 +93,8 @@
    (let loop ([current coeffs] [acc (list coeffs)])
      (if (> (length current) 3)
          (let ([d (derivative-coefficients current)])
-           (loop d (cons d acc))) acc))))
+           (loop d (cons d acc))) 
+    acc))))
 
 (define (roots-in-range roots a b)
   (let loop ([rs roots] [acc '()])
@@ -104,11 +105,11 @@
       [else (loop (cdr rs) acc)])))
 
 (define (refine-level poly roots a b eps)
-  (let* ([dcoeffsRoots (roots-in-range roots a b)] [splitPoints (append (list a) dcoeffsRoots (list b))])
+  (let* ([dcoeffsRoots (roots-in-range roots a b)] [splitPoints (append (list a) (sort dcoeffsRoots <) (list b))])
     (let loop ([pts splitPoints] [acc '()])
       (if (or (null? pts) (null? (cdr pts)))
           (reverse acc)
-          (let* ([lo (car pts)] [hi (cadr pts)] [finiteBracket (safe-bracket poly lo hi)])
+          (let* ([lo (car pts)] [hi (car (cdr pts))] [finiteBracket (safe-bracket poly lo hi)])
             (if (not finiteBracket)
                 (loop (cdr pts) acc)
                 (let ([lo (first finiteBracket)] [hi (second finiteBracket)] [fa (third finiteBracket)] [fb (fourth finiteBracket)])
@@ -136,8 +137,6 @@
                roots
                (loop (cdr polys) (refine-level (car polys) roots a b eps)))))])))
 
-(define (round6 r)
-  (/ (round (* r 1000000.0)) 1000000.0))
 
 (define (map-outer-roots bounds)
   (let loop ([ys bounds] [acc '()])
@@ -147,6 +146,9 @@
        (loop (cdr ys) (cons (/ 1.0 (car ys)) acc))]
       [else (loop (cdr ys) acc)])))
 
+(define (round6 r)
+  (/ (round (* r 1000000.0)) 1000000.0))
+
 (define (round-all roots)
   (let loop ([rs roots] [acc '()])
     (if (null? rs)
@@ -154,8 +156,8 @@
         (loop (cdr rs) (cons (round6 (car rs)) acc)))))
 
 (define (scan-page coeffs eps)
-  (let* ([reversed-coeffs (reverse coeffs)]
-         [inner-roots (find-roots coeffs -1.0 1.0 eps)]
+  (let* ([inner-roots (find-roots coeffs -1.0 1.0 eps)]
+         [reversed-coeffs (reverse coeffs)]
          [outer-bounds (find-roots reversed-coeffs -1.0 1.0 eps)]
          [outer-roots (map-outer-roots outer-bounds)]
          [all-roots (append inner-roots outer-roots)])

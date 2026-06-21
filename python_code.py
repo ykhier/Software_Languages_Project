@@ -129,7 +129,7 @@ def findRoots(coeffs, a, b, eps):
 
     for poly in reversed(chain[:-1]):
         dcoeffsRoots = [r for r in roots if a <= r <= b]
-        splitPoints = [a] + dcoeffsRoots + [b]
+        splitPoints = [a] + sorted(dcoeffsRoots) + [b]
 
         roots = []
         for i in range(len(splitPoints) - 1):
