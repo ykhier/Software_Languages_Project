@@ -96,12 +96,12 @@ def firstDegree(coeff0, coeff1):
 
 
 def secondDegree(coeff0, coeff1, coeff2):
-    A, B, C = coeff0, coeff1, coeff2
-    discriminant = B**2 - 4 * A * C
+    a, b, c = coeff0, coeff1, coeff2
+    discriminant = b**2 - 4 * a * c
     roots = []
     sqrtDisc = np.sqrt(discriminant)
-    r1 = (-B - sqrtDisc) / (2.0 * A)
-    r2 = (-B + sqrtDisc) / (2.0 * A)
+    r1 = (-b - sqrtDisc) / (2.0 * a)
+    r2 = (-b + sqrtDisc) / (2.0 * a)
     roots = [r1, r2]
     return roots
 
